@@ -91,7 +91,3 @@ See [CLAUDE.md](CLAUDE.md) for comprehensive documentation including:
 - Model architecture and hyperparameters
 - Best practices and limitations
 - Troubleshooting guide
-
-## Disclaimer
-
-**For educational purposes only.** This synthetic fear/greed index is a simplified proxy based solely on BTC/Gold dynamics and should NOT be used for actual trading decisions. Past performance does not guarantee future results.
