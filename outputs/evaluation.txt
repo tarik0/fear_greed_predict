@@ -1,0 +1,35 @@
+======================================================================
+Fear/Greed Index Predictor - Test Set Evaluation
+======================================================================
+
+Test Period: 2023-12-29 to 2025-07-23
+Test Samples: 573
+
+======================================================================
+Metrics:
+======================================================================
+  RMSE:               15.4125
+  MAE:                12.1667
+  R² Score:           0.7160
+  MAPE:               79.33% (unstable with near-zero values)
+  SMAPE:              37.56% (stable alternative)
+  Direction Accuracy: 50.17%
+
+======================================================================
+Metric Definitions:
+======================================================================
+  RMSE:  Root Mean Squared Error (lower is better)
+  MAE:   Mean Absolute Error (lower is better)
+  MAPE:  Mean Absolute Percentage Error
+         WARNING: Unstable when y_true approaches zero!
+  SMAPE: Symmetric MAPE - more stable for near-zero values
+  R²:    Coefficient of Determination (1.0 = perfect fit)
+  Direction Accuracy: % of correct up/down predictions
+                     (>50% = better than random)
+
+======================================================================
+Success Criteria:
+======================================================================
+  ✓ Direction accuracy > 50% (beats random)
+  ✗ SMAPE ≥ 30% (high error)
+  ✓ R² > 0 (better than mean baseline)

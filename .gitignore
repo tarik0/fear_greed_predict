@@ -56,8 +56,6 @@ datasets/val.csv
 datasets/test.csv
 
 # Outputs
-outputs/*.txt
-outputs/*.png
 outputs/*.jpg
 outputs/*.pdf
 
