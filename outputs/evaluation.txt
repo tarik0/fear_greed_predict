@@ -1,19 +1,20 @@
 ======================================================================
-Fear/Greed Index Predictor - Test Set Evaluation
+Fear/Greed Index Predictor - GRU Model Test Set Evaluation
 ======================================================================
 
-Test Period: 2023-12-29 to 2025-07-23
-Test Samples: 573
+Model: GRU (Gated Recurrent Unit)
+Test Period: 2024-01-05 to 2025-07-23
+Test Samples: 566
 
 ======================================================================
 Metrics:
 ======================================================================
-  RMSE:               15.4125
-  MAE:                12.1667
-  R² Score:           0.7160
-  MAPE:               79.33% (unstable with near-zero values)
-  SMAPE:              37.56% (stable alternative)
-  Direction Accuracy: 50.17%
+  RMSE:               16.8478
+  MAE:                13.4241
+  R² Score:           0.6602
+  MAPE:               72.34% (unstable with near-zero values)
+  SMAPE:              39.00% (stable alternative)
+  Direction Accuracy: 69.91%
 
 ======================================================================
 Metric Definitions:
@@ -32,4 +33,4 @@ Success Criteria:
 ======================================================================
   ✓ Direction accuracy > 50% (beats random)
   ✗ SMAPE ≥ 30% (high error)
-  ✓ R² > 0 (better than mean baseline)
+  ✓ R² > 0.5 (strong explanatory power)
