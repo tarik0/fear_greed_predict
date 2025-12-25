@@ -33,7 +33,8 @@ gold_crypto_predict/
 │   └── feargreed_model.pt
 ├── outputs/              # Evaluation results and plots
 │   ├── evaluation.txt    # Metrics summary
-│   └── predictions.png   # Visualization
+│   ├── predictions.png   # Test set visualization
+│   └── training_metrics.png  # Training curves
 ├── src/                  # Source code
 │   ├── prepare_data.py   # Data preprocessing & feature engineering
 │   ├── train_model.py    # GRU model training with early stopping

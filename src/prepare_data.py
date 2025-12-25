@@ -7,7 +7,6 @@ import pandas as pd
 import numpy as np
 from pathlib import Path
 
-# Set random seed for reproducibility
 np.random.seed(42)
 
 
@@ -25,13 +24,11 @@ def load_data():
     except Exception as e:
         raise Exception(f"Error reading gold_crypto.csv: {str(e)}")
 
-    # Validate required columns
     required_cols = ['Date', 'Bitcoin (USD)', 'Gold (USD per oz)']
     missing_cols = [col for col in required_cols if col not in df.columns]
     if missing_cols:
         raise ValueError(f"Missing required columns: {missing_cols}")
 
-    # Validate data is not empty
     if len(df) == 0:
         raise ValueError("Error: Dataset is empty")
 
@@ -57,29 +54,22 @@ def create_synthetic_index(df):
 
     df = df.copy()
 
-    # Extract BTC and Gold prices
     try:
         btc = df['Bitcoin (USD)']
         gold = df['Gold (USD per oz)']
     except KeyError as e:
         raise KeyError(f"Required price column not found: {str(e)}")
 
-    # Validate price data
     if btc.isna().all() or gold.isna().all():
         raise ValueError("Error: All price values are NaN")
 
     if (btc <= 0).any() or (gold <= 0).any():
         print("⚠ Warning: Found non-positive prices. This may cause issues.")
 
-    # Calculate 7-day returns
     btc_return_7d = btc.pct_change(7)
     gold_return_7d = gold.pct_change(7)
-
-    # Compute momentum spread (BTC outperformance)
     momentum_spread = btc_return_7d - gold_return_7d
 
-    # Normalize to 0-100 using rolling percentile rank (252-day window = 1 year)
-    # Use min_periods=30 to start calculating after first month
     fear_greed_index = momentum_spread.rolling(window=252, min_periods=30).apply(
         lambda x: pd.Series(x).rank(pct=True).iloc[-1] * 100 if len(x) > 1 else np.nan,
         raw=False
@@ -87,7 +77,6 @@ def create_synthetic_index(df):
 
     df['fear_greed'] = fear_greed_index
 
-    # Print statistics
     print(f"Fear/Greed Index Statistics:")
     print(df['fear_greed'].describe())
     print(f"Non-null values: {df['fear_greed'].notna().sum()} / {len(df)}")
@@ -108,43 +97,29 @@ def engineer_features(df):
     gold = df['Gold (USD per oz)']
     fear_greed = df['fear_greed']
 
-    # ===== AUTOREGRESSIVE FEATURES (3) =====
     df['fear_greed_lag1'] = fear_greed.shift(1)
     df['fear_greed_lag3'] = fear_greed.shift(3)
     df['fear_greed_lag7'] = fear_greed.shift(7)
 
-    # ===== PRICE MOMENTUM FEATURES (4) =====
     df['btc_return_1d'] = btc.pct_change(1)
     df['btc_return_7d'] = btc.pct_change(7)
     df['gold_return_1d'] = gold.pct_change(1)
     df['gold_return_7d'] = gold.pct_change(7)
 
-    # ===== CROSS-ASSET FEATURES (2) =====
-    # Use lagged prices to avoid leakage
     btc_lag1 = btc.shift(1)
     gold_lag1 = gold.shift(1)
     df['btc_gold_ratio'] = btc_lag1 / gold_lag1
     df['ratio_change_7d'] = df['btc_gold_ratio'].pct_change(7)
 
-    # ===== VOLATILITY FEATURES (1) =====
-    # 7-day rolling std of BTC returns
     df['btc_vol_7d'] = df['btc_return_1d'].rolling(window=7, min_periods=2).std()
 
-    # ===== TREND FEATURES (2) =====
-    # Price / 7-day MA ratio (use shifted MA to avoid leakage)
     btc_ma7 = btc.shift(1).rolling(window=7, min_periods=1).mean()
     gold_ma7 = gold.shift(1).rolling(window=7, min_periods=1).mean()
     df['btc_ma7_ratio'] = btc / btc_ma7
     df['gold_ma7_ratio'] = gold / gold_ma7
 
-    # ===== TEMPORAL FEATURES (1) =====
     df['day_of_week'] = df['Date'].dt.dayofweek
-
-    # ===== TARGET VARIABLE =====
-    # Predict NEXT day's fear/greed index
     df['fear_greed_next'] = fear_greed.shift(-1)
-
-    # Drop rows with NaN in target or features
     initial_len = len(df)
     df = df.dropna().reset_index(drop=True)
     final_len = len(df)
@@ -153,7 +128,6 @@ def engineer_features(df):
     print(f"Final dataset: {final_len} rows")
     print(f"Features: 13 + 1 target + Date column")
 
-    # Verify no data leakage: all feature columns should exist
     feature_cols = [
         'fear_greed_lag1', 'fear_greed_lag3', 'fear_greed_lag7',
         'btc_return_1d', 'btc_return_7d', 'gold_return_1d', 'gold_return_7d',
@@ -189,7 +163,6 @@ def split_chronologically(df, train_ratio=0.7, val_ratio=0.15):
     print(f"Val:   {len(val)} rows ({val['Date'].min()} to {val['Date'].max()})")
     print(f"Test:  {len(test)} rows ({test['Date'].min()} to {test['Date'].max()})")
 
-    # Ensure splits are non-overlapping
     assert train['Date'].max() < val['Date'].min(), "Train-Val overlap detected"
     assert val['Date'].max() < test['Date'].min(), "Val-Test overlap detected"
 
@@ -205,27 +178,18 @@ def main():
     print("=" * 70)
 
     try:
-        # Step 1: Load data
         df = load_data()
-
-        # Step 2: Create synthetic index
         df = create_synthetic_index(df)
-
-        # Step 3: Engineer features
         df = engineer_features(df)
 
-        # Validate we have enough data
         if len(df) < 100:
             raise ValueError(f"Error: Only {len(df)} samples remaining after feature engineering. Need at least 100.")
 
-        # Step 4: Split chronologically
         train, val, test = split_chronologically(df)
 
-        # Validate splits
         if len(train) < 50 or len(val) < 10 or len(test) < 10:
             raise ValueError("Error: Insufficient data in one or more splits")
 
-        # Step 5: Save processed datasets
         print("\nSaving processed datasets...")
         Path('datasets').mkdir(exist_ok=True)
 

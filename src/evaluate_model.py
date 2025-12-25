@@ -369,7 +369,7 @@ def save_evaluation_report(results, test_date_range, n_samples):
 
     # Save to file
     output_path = 'outputs/evaluation.txt'
-    with open(output_path, 'w') as f:
+    with open(output_path, 'w',encoding='utf-8') as f:
         f.write(report_text)
 
     print(f"\n✓ Report saved to {output_path}")
